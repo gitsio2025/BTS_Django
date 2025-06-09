@@ -147,6 +147,7 @@ BTS_PY_BR2/
 ### 🔐 `auth_app`
 
 ```mermaid
+classDiagram
     class CustomUser {
         +username : str
         +email : str
@@ -161,6 +162,7 @@ BTS_PY_BR2/
 ### 📦 `elements_app`
 
 ```mermaid
+classDiagram
     class List {
         +id : int
         +name : str
