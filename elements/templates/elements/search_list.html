@@ -1,0 +1,12 @@
+
+<!-- boucle pour afficher les lists trouvés lors de la recherche-->
+
+{% for list in lists %}
+
+    {% include 'elements/list.html' with list=list %}
+
+{% empty %}
+
+    <p class="text-muted">Aucune liste trouvée</p>
+
+{% endfor %}

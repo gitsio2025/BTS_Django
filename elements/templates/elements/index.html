@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang=fr>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://unpkg.com/htmx.org@2.0.4/dist/htmx.js" integrity="sha384-oeUn82QNXPuVkGCkcrInrS1twIxKhkZiFfr2TdiuObZ3n3yIeMiqcRzkIcguaof1" crossorigin="anonymous"></script>
+     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-SgOJa3DmI69IUzQ2PVdRZhwQ+dy64/BUtbMJw1MZ8t5HZApcHrRKUc4W0kG879m7" crossorigin="anonymous">
+    <title>Inventory</title>
+
+</head>
+<body>
+<div class=" bg-secondary text-black min-vh-100 overflow-hidden" style="--bs-bg-opacity: .5;">
+    <div class="container mt-3" >
+
+        <!-- affichage du titre, icône, bouton de déconnexion-->
+        <header class="d-flex justify-content-between align-items-center mb-4">
+
+            <div class="d-flex align-items-center gap-2">
+
+                <img src="https://cdn-icons-png.flaticon.com/64/15542/15542370.png" alt="LOGO">
+                <h1 class="mt-0">Inventory</h1>
+
+            </div>
+
+            <a href="{% url 'deconnexion' %}" class="btn btn-outline-danger">Se déconnecter</a>
+
+        </header>
+
+        <div class="row">
+
+            <div class="col-12 col-md-4 mb-3 mb-md-0 d-flex flex-column">
+
+                 <!-- afficher les différentes lists -->
+                <nav id="lists" class="list-group  mt-2 order-2 order-md-1 mb-2" role="tablist">
+                        {% for list in lists %}
+                            {% include 'elements/list.html' with list=list %}
+                        {% endfor %}
+                </nav>
+
+
+                <div class="d-flex gap-2 mt-2 order-1 order-md-2">
+
+                    <!-- Champ en dehors des forms mais inclus par hx-include -->
+                    <input type="text"
+                        name="list-name"
+                        id="list-input"
+                        placeholder="List..."
+                        class="form-control w-85 mb-1">
+
+                    <!-- Bouton Rechercher, méthode POST, car mieux géré par htmx -->
+                    <form method="POST" hx-include="#list-input">
+
+                        {% csrf_token %}
+
+                        <!-- bouton de recherche d'une list-->
+                        <button class="btn btn-warning"
+                                hx-post="{% url 'search-lists' %}"
+                                hx-target="#lists"
+                                hx-swap="innerHTML"
+                                type="submit">🔍
+                        </button>
+
+                    </form>
+
+                    <!-- Bouton Ajouter Une List-->
+                    <form method="POST" hx-include="#list-input">
+                        {% csrf_token %}
+                        <button class="btn btn-success"
+                            hx-post="{% url 'add-list' %}"
+                            hx-target="#lists"
+                            hx-swap="beforeend"
+                            type="submit">Ajouter</button>
+                    </form>
+
+                </div>
+
+            <form method="get" action="{% url 'export_inventory_csv' %}" class="border p-4 rounded shadow-sm bg-light">
+
+                <!-- 🔽 Sélection de la marque -->
+                <div class="mb-3">
+                    <label for="list" class="form-label fw-bold">Filtrer par marque :</label>
+                    <select name="list" id="list" class="form-select">
+                        <option value="">-- Toutes --</option>
+                        {% for list in lists %}
+                            <option value="{{ list.slug }}">{{ list.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- 🔎 Champ de recherche -->
+                <div class="mb-3">
+                    <label for="q" class="form-label fw-bold">Recherche :</label>
+                    <input type="text" name="q" id="q" class="form-control" placeholder="ex: Moteur">
+                </div>
+
+                <!-- 📥 Bouton d'export -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-success" onclick="return confirm('Es-tu sûr de vouloir télécharger un CSV ?')">
+                        📥 Exporter le CSV
+                    </button>
+                </div>
+
+            </form>
+
+            </div>
+
+            <section class="col-12 col-md-8">
+
+                <!-- ajouter un élément / hx-vals allows to create a link between an element and its list in POST request -->
+                <div class="d-flex gap-2 mt-2">
+
+                     <input type="text"
+                        name="element-description"
+                        id="element-input"
+                        placeholder="Element..."
+                        class="form-control w-85">
+
+                     <input type="number"
+                        name="element-quantity"
+                        min="1"
+                        value="1"
+                        id="element-input"
+                        placeholder="Quantité"
+                        class="form-control w-40">
+
+                    <form method="POST" hx-include="#element-input">
+                        {% csrf_token %}
+                        <button class="btn btn-warning"
+                                hx-post="{% url 'search-elements' %}"
+                                hx-target="#elements"
+                                hx-swap="innerHTML"
+                                hx-vals="js:{list: getListFromURL()}"
+                                type="submit">🔍</button>
+                    </form>
+
+                    <form method="POST" hx-include="#element-input">
+
+                        {% csrf_token %}
+
+                        <button class="btn btn-success"
+                                hx-post="{% url 'add-element' %}"
+                                hx-vals='js:{list: getListFromURL()}'
+                                hx-target="#elements"
+                                hx-swap="beforeend"
+                                type="submit">Ajouter
+                        </button>
+
+                    </form>
+
+                </div>
+
+                <!-- We use the render template for display elements, call get_elements -->
+                <section id="elements-container" class="mb-2">
+                    {% include 'elements/elements.html' with elements=elements  list=list %}
+                </section>
+
+            </section>
+        </div>
+
+    </div>
+</div>
+
+
+
+
+<script>
+    // Attache automatiquement le CSRF token aux requêtes HTMX
+    document.body.addEventListener('htmx:configRequest', (event) => {
+        const token = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        event.detail.headers['X-CSRFToken'] = token;
+    });
+    //fonction permettant de supprimer l'élément restant dans l'entrée après la publication
+    document.body.addEventListener("htmx:afterRequest", function (evt) {
+        document.getElementById('element-input').value = '';
+    });
+    //fonction permettant de supprimer la liste restante dans l'entrée après la publication
+     document.body.addEventListener("htmx:afterRequest", function (evt) {
+         document.getElementById('list-input').value = '';
+    });
+
+     //fonction pour envoyer un message d'erreur en cas de doublon ou d'erreur
+    document.body.addEventListener("htmx:responseError", function(evt) {
+        alert(evt.detail.xhr.responseText);
+    })
+     //fonction pour récupérer une liste de noms dans l'URL lorsque nous poussons un nouvel élément et envoyons le retour dans hx-vals
+     function getListFromURL() {
+         let url = new URL(window.location.href);
+         let searchParams = url.searchParams;
+         return searchParams.get("list");
+     }
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.5/dist/js/bootstrap.bundle.min.js" integrity="sha384-k6d4wzSIapyDyv1kpU366/PK5hCdSbCRGRCMv+eplOQJWyd1fbcAu9OCUj5zNLiq" crossorigin="anonymous"></script>
+
+</body>
+</html>

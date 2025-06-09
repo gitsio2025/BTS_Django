@@ -1,0 +1,11 @@
+
+
+
+<!-- bouton qui sélectionne la list et renvoie vers get element-->
+
+<button class="list-group-item {% if request.GET.list == list.slug %}active{% endif %} "
+        data-bs-toggle="list"
+        hx-get="{% url 'get-elements' list.pk %}"
+        hx-push-url="?list={{ list.slug }}"
+        hx-target="#elements-container">{{ list.name }}
+</button>

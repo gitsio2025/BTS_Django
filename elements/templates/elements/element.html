@@ -1,0 +1,38 @@
+
+<!--modèle d'affichage d'élément-->
+<form method="POST" class="align-items-center">
+
+    {% csrf_token %}
+
+    <!--récupération de l'id de l'élément pour afficher la bonne quantité-->
+    <div id="element-{{ element.id }}" class=" border d-flex justify-content-between align-items-center rounded p-2 mb-2">
+
+        <div class="flex-grow-1">
+            <span class="fw-normal">{{ element.description }}</span>
+        </div>
+
+        <div style="width: 35%; text-align: left;" class="">
+            <span class="fw-semibold">{{ element.quantity }}</span>
+        </div>
+
+        <!-- lien pour modifier ou supprimer un element -->
+        <div class="d-flex gap-2">
+
+            <button class="btn btn-warning btn-sm"
+                    hx-post="{% url 'edit-element' element.pk %}"
+                    hx-target="#element-{{ element.pk }}"
+                    hx-swap="outerHTML"
+                    type="submit">✏️
+            </button>
+            <button class="btn btn-danger btn-sm"
+                    hx-post="{% url 'delete-element' element.pk %}"
+                    hx-target="closest form"
+                    hx-swap="outerHTML"
+                    hx-confirm="Voulez-vous suprimer l'élément définitivement ?"
+                    type="submit">🗑️
+            </button>
+        </div>
+
+    </div>
+
+</form>

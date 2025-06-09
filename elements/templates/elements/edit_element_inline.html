@@ -1,0 +1,12 @@
+
+<!--vue temporaire de modification-->
+<form method="post" class="d-flex justify-content-between align-items-center gap-2"
+      hx-post="{% url 'save-element' element.pk %}"
+      hx-swap="outerHTML">
+
+     {% csrf_token %}
+
+    <input type="text" class="form-control w-85 mr-2" name="description" value="{{ element.description }}" />
+    <input type="number" class="form-control w-45 mr-2" name="quantity" value="{{ element.quantity }}" />
+    <button type="submit" class="btn btn-success">&#10004;</button>
+</form>

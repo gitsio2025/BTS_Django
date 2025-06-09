@@ -1,0 +1,11 @@
+
+
+<!-- boucle pour afficher les éléments trouvés lors de la recherche-->
+
+{% for element in elements %}
+
+    {% include 'elements/element.html' with element=element %}
+
+{% empty %}
+    <p class="text-muted">Aucun element trouvé</p>
+{% endfor %}
